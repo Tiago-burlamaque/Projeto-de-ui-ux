@@ -1,6 +1,7 @@
 import axios from 'axios'
-import React, { useState } from 'react'
-import { toast, ToastContainer } from 'react-toastify'
+import { useState } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
+import { toast } from 'react-toastify'
 
 
 function App() {
@@ -10,24 +11,34 @@ function App() {
   const [senha, setSenha] = useState('')
   const [confirmarSenha, setCofirmarSenha] = useState('')
 
+  const navigate = useNavigate()
 
 
-  const handleSubmit = (e) => {
+
+  const handleSubmit = async (e) => {
     e.preventDefault()
 
-    axios.post('http://localhost:3000/usuarios', {
-      nome: nome,
-      email: email,
-      senha: senha
-    })
-    .then(function(res) {
-      toast.success(`${nome} cadastrado com sucesso`)
-      console.log(res);
-    })
-    .catch(function(error) {
-      console.log(error);
-      
-    })
+    if (senha !== confirmarSenha) {
+      toast.warning("As senhas não coincidem")
+      return
+    }
+    try {
+      await axios.post('http://localhost:3000/usuario', {
+        nome, email, senha
+      })
+      toast.success(`${nome} foi cadastrado`, {
+        autoClose: 2000,
+        hideProgressBar: true,
+      })
+      navigate('login')
+    } catch (error) {
+      console.error('Erro ao criar usuário:', error);
+      toast.error('Erro ao criar o usuário!', {
+        // position: toast.POSITION.TOP_RIGHT,
+        autoClose: 2000,
+        hideProgressBar: true,
+      });
+    }
   }
 
 
@@ -64,10 +75,10 @@ function App() {
       </div>
       <div className='flex flex-col  w-1/2  justify-center items-center'>
         <header className='flex justify-center w-full'>
-          <h1 className='text-3xl font-mono'>Registrar-se</h1>
+          <h1 className='text-3xl font-mono mb-10'>Registrar-se</h1>
         </header>
         <main className='w-full h-100 mt-2 items-center justify-center flex'>
-          <form className='flex flex-col gap-2 items-center w-100 bg-black text-white rounded p-5 shadow-2xl'>
+          <form onSubmit={handleSubmit} className='flex flex-col gap-2 items-center w-100 bg-black text-white rounded p-5 shadow-2xl'>
             <label htmlFor="nome">Nome</label>
             <input required type="text" className='border w-70 rounded focus:outline-2 focus:outline-blue-500 p-1 font-mono focus:border-blue-500 focus:transition '
               value={nome}
@@ -98,10 +109,12 @@ function App() {
               type='submit'>
               Registrar
             </button>
+          <p>Já tem uma conta? <Link to='/' className='text-neutral-200 hover:text-neutral-400 transition duration-300'>Entre</Link></p>
           </form>
         </main>
+        <footer>
+        </footer>
       </div>
-      <ToastContainer />
     </section>
   )
 }
